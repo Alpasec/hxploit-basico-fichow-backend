@@ -88,10 +88,20 @@ JWT_SECRET_KEY=un_secreto_largo_de_produccion
 APP_ENV=production
 DEBUG=false
 API_PREFIX=/api/v1
-ALLOWED_ORIGINS=*
+ALLOWED_ORIGINS=https://tu-front.vercel.app
+JWT_COOKIE_SECURE=true
+JWT_COOKIE_SAMESITE=none
 AUTO_CREATE_DATABASE=true
 AUTO_CREATE_TABLES=true
 AUTO_SEED_DATA=true
+```
+
+En local usa:
+
+```txt
+ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+JWT_COOKIE_SECURE=false
+JWT_COOKIE_SAMESITE=lax
 ```
 
 Comandos Render:

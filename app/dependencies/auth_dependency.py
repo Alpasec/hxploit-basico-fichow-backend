@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Cookie, Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
@@ -7,9 +7,16 @@ from app.models.user import User
 from app.config import settings
 from app.exceptions import unauthorized, user_not_found, user_inactive
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_PREFIX}/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_PREFIX}/auth/login", auto_error=False)
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(
+    token: str | None = Depends(oauth2_scheme),
+    cookie_token: str | None = Cookie(default=None, alias=settings.JWT_COOKIE_NAME),
+    db: Session = Depends(get_db)
+):
+    token = cookie_token or token
+    if not token:
+        raise unauthorized()
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         user_id: str = payload.get("sub")

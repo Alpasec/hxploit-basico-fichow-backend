@@ -12,9 +12,13 @@ services:
       - key: API_PREFIX
         value: /api/v1
       - key: ALLOWED_ORIGINS
-        value: "*"
+        value: "http://localhost:5173"
       - key: ENABLE_DOCS
         value: "true"
+      - key: JWT_COOKIE_SECURE
+        value: "true"
+      - key: JWT_COOKIE_SAMESITE
+        value: "none"
       - key: AUTO_CREATE_DATABASE
         value: "true"
       - key: AUTO_CREATE_TABLES

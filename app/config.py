@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    JWT_COOKIE_NAME: str = "fichow_access_token"
+    JWT_COOKIE_SECURE: bool = False
+    JWT_COOKIE_SAMESITE: str = "lax"
     
     DEFAULT_USER_ROLE: str = "CUSTOMER"
     DEFAULT_WALLET_BALANCE: float = 100.00
