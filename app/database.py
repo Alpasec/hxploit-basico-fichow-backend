@@ -19,11 +19,19 @@ def create_database_if_missing():
     if not database_name:
         return
 
-    server_url = url.set(database=None)
+    if url.get_backend_name() != "postgresql":
+        raise RuntimeError("Fichow backend is configured for PostgreSQL. Use a postgresql:// or postgresql+psycopg2:// DATABASE_URL.")
+
+    server_url = url.set(database="postgres")
     server_engine = create_engine(server_url, pool_pre_ping=True, isolation_level="AUTOCOMMIT")
-    safe_database_name = database_name.replace("`", "``")
     with server_engine.connect() as connection:
-        connection.execute(text(f"CREATE DATABASE IF NOT EXISTS `{safe_database_name}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"))
+        exists = connection.execute(
+            text("SELECT 1 FROM pg_database WHERE datname = :database_name"),
+            {"database_name": database_name}
+        ).scalar()
+        if not exists:
+            safe_database_name = database_name.replace('"', '""')
+            connection.execute(text(f'CREATE DATABASE "{safe_database_name}"'))
     server_engine.dispose()
 
 def create_tables_if_missing():

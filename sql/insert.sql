@@ -59,3 +59,13 @@ INSERT INTO coupon_usages (id, coupon_id, user_id, order_id) VALUES
 (1, 1, 2, 1),
 (2, 2, 3, 2),
 (3, 3, 4, 3);
+
+SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+SELECT setval('wallets_id_seq', (SELECT MAX(id) FROM wallets));
+SELECT setval('carts_id_seq', (SELECT MAX(id) FROM carts));
+SELECT setval('products_id_seq', (SELECT MAX(id) FROM products));
+SELECT setval('coupons_id_seq', (SELECT MAX(id) FROM coupons));
+SELECT setval('orders_id_seq', (SELECT MAX(id) FROM orders));
+SELECT setval('order_items_id_seq', (SELECT MAX(id) FROM order_items));
+SELECT setval('transactions_id_seq', (SELECT MAX(id) FROM transactions));
+SELECT setval('coupon_usages_id_seq', (SELECT MAX(id) FROM coupon_usages));

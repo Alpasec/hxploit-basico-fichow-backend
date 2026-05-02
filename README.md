@@ -1,6 +1,6 @@
 # Fichow API
 
-Backend de Fichow hecho con FastAPI y MySQL.
+Backend de Fichow hecho con FastAPI, SQLAlchemy y PostgreSQL.
 
 ## Ejecutar local simple
 
@@ -18,10 +18,10 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-3. Edita solo esto segun tu MySQL local:
+3. Edita esto segun tu PostgreSQL local:
 
 ```txt
-DATABASE_URL=mysql+pymysql://root:tu_password@localhost:3306/fichow_db
+DATABASE_URL=postgresql+psycopg2://postgres:tu_password@localhost:5432/fichow_db
 JWT_SECRET_KEY=un_secreto_largo_local
 ```
 
@@ -39,7 +39,7 @@ AUTO_CREATE_TABLES=true
 AUTO_SEED_DATA=true
 ```
 
-Eso crea la base `fichow_db`, las tablas y datos iniciales si no existen.
+Eso crea la base `fichow_db`, las tablas y datos iniciales si no existen. El usuario de PostgreSQL que pongas en `DATABASE_URL` debe tener permiso para crear bases si usas `AUTO_CREATE_DATABASE=true`.
 
 ## URLs locales
 
@@ -68,22 +68,36 @@ maria@fichow.test
 
 ## Que es Uvicorn
 
-FastAPI es la aplicacion, pero necesita un servidor ASGI para escuchar HTTP. Uvicorn es ese servidor. Antes tenias que escribir:
+FastAPI es la aplicacion, pero necesita un servidor ASGI para escuchar HTTP. Uvicorn es ese servidor. No tienes que recordarlo: `python run.py` lo ejecuta por dentro.
 
-```bash
-uvicorn app.main:app --reload
+## Deploy en Render con PostgreSQL
+
+Render tiene PostgreSQL gestionado. Crea primero la DB:
+
+```txt
+New + -> Postgres
+Name: fichow-db
+Database: fichow_db
+User: fichow_user
+Region: la misma que el backend
 ```
 
-Ahora no necesitas recordarlo. `python run.py` lo ejecuta por dentro.
+Cuando Render termine de crearla, copia la Internal Database URL. Se ve parecida a:
 
-## Deploy en Render
+```txt
+postgresql://USER:PASSWORD@INTERNAL_HOST:5432/fichow_db
+```
 
-Puedes desplegar backend y MySQL como dos servicios separados.
+Para SQLAlchemy usa:
+
+```txt
+postgresql+psycopg2://USER:PASSWORD@INTERNAL_HOST:5432/fichow_db
+```
 
 Variables recomendadas para el backend:
 
 ```txt
-DATABASE_URL=mysql+pymysql://user:password@mysql-host:3306/fichow_db
+DATABASE_URL=postgresql+psycopg2://USER:PASSWORD@INTERNAL_HOST:5432/fichow_db
 JWT_SECRET_KEY=un_secreto_largo_de_produccion
 APP_ENV=production
 DEBUG=false
@@ -91,7 +105,7 @@ API_PREFIX=/api/v1
 ALLOWED_ORIGINS=https://tu-front.vercel.app
 JWT_COOKIE_SECURE=true
 JWT_COOKIE_SAMESITE=none
-AUTO_CREATE_DATABASE=true
+AUTO_CREATE_DATABASE=false
 AUTO_CREATE_TABLES=true
 AUTO_SEED_DATA=true
 ```
@@ -112,9 +126,3 @@ Start Command: python run.py
 ```
 
 `python run.py` detecta automaticamente la variable `PORT` de Render.
-
-Tambien sigue funcionando este comando manual:
-
-```txt
-uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
