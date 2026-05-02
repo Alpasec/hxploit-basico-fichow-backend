@@ -19,8 +19,6 @@ def get_my_wallet(db: Session = Depends(get_db), current_user: User = Depends(ge
 @router.get("/{wallet_id}", response_model=None)
 def get_wallet(wallet_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     wallet = wallet_service.get_wallet_by_id(db, wallet_id)
-    if current_user.role.value != "ADMIN" and wallet.user_id != current_user.id:
-        raise forbidden()
     return success_response(data=WalletResponse.model_validate(wallet).model_dump())
 
 @router.get("", response_model=None)

@@ -14,10 +14,10 @@ def get_user_by_id(db: Session, user_id: int):
 
 def update_user(db: Session, user_id: int, user_data: UserUpdate):
     user = get_user_by_id(db, user_id)
-    if user_data.full_name is not None:
-        user.full_name = user_data.full_name
-    if user_data.email is not None:
-        user.email = user_data.email
+    update_data = user_data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        if hasattr(user, key):
+            setattr(user, key, value)
     db.commit()
     db.refresh(user)
     return user

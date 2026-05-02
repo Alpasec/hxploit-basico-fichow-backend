@@ -13,7 +13,7 @@ from app.exceptions import forbidden
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("", response_model=None)
-def get_users(db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+def get_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     users = user_service.get_users(db)
     return success_response(data=[UserResponse.model_validate(u).model_dump() for u in users])
 

@@ -67,9 +67,6 @@ def create_order(db: Session, user_id: int, request: OrderCreate):
                 raise product_not_found()
             if not product.is_active:
                 raise CustomException(status.HTTP_400_BAD_REQUEST, "Product is inactive", "PRODUCT_INACTIVE")
-            if item["quantity"] > product.stock:
-                raise insufficient_stock()
-
             item_subtotal = product.price * item["quantity"]
             product.stock -= item["quantity"]
             db.add(product)
@@ -148,8 +145,6 @@ def _decrease_coupon_usage(db: Session, order: Order):
 
 def cancel_order(db: Session, user_id: int, order_id: int, is_admin: bool = False):
     order = get_order_by_id(db, order_id)
-    if not is_admin and order.user_id != user_id:
-        raise CustomException(status.HTTP_403_FORBIDDEN, "Not enough permissions", "FORBIDDEN")
     if order.status != OrderStatus.CREATED and order.status != OrderStatus.PAID:
         raise CustomException(status.HTTP_400_BAD_REQUEST, "Order cannot be cancelled", "INVALID_STATUS")
         

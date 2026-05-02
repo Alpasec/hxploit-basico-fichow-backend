@@ -29,7 +29,7 @@ def get_order(order_id: int, db: Session = Depends(get_db), current_user: User =
     return success_response(data=OrderResponse.model_validate(order).model_dump())
 
 @router.get("", response_model=None)
-def get_orders(db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+def get_orders(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     orders = order_service.get_orders(db)
     return success_response(data=[OrderResponse.model_validate(o).model_dump() for o in orders])
 
@@ -44,6 +44,6 @@ def cancel_order(order_id: int, db: Session = Depends(get_db), current_user: Use
     return success_response(data=OrderResponse.model_validate(order).model_dump(), message="Order cancelled successfully")
 
 @router.post("/{order_id}/refund", response_model=None)
-def refund_order(order_id: int, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+def refund_order(order_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     order = order_service.refund_order(db, order_id)
     return success_response(data=OrderResponse.model_validate(order).model_dump(), message="Order refunded successfully")

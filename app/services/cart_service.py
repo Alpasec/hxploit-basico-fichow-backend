@@ -8,6 +8,11 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from fastapi import status
 
+def normalize_quantity(value):
+    if isinstance(value, str):
+        return float(value) if "." in value else int(value)
+    return value
+
 def get_cart_by_user_id(db: Session, user_id: int):
     cart = db.query(Cart).filter(Cart.user_id == user_id, Cart.deleted_at.is_(None)).first()
     if not cart:
@@ -23,13 +28,12 @@ def get_cart_items(db: Session, cart_id: int):
 def add_item_to_cart(db: Session, user_id: int, item_data: CartItemCreate):
     cart = get_cart_by_user_id(db, user_id)
     product = db.query(Product).filter(Product.id == item_data.product_id, Product.deleted_at.is_(None)).first()
+    quantity = normalize_quantity(item_data.quantity)
     
     if not product:
         raise product_not_found()
     if not product.is_active:
         raise CustomException(status.HTTP_400_BAD_REQUEST, "Product is inactive", "PRODUCT_INACTIVE")
-    if item_data.quantity <= 0:
-        raise CustomException(status.HTTP_400_BAD_REQUEST, "Quantity must be greater than 0", "INVALID_QUANTITY")
         
     existing_item = db.query(CartItem).filter(
         CartItem.cart_id == cart.id,
@@ -37,12 +41,9 @@ def add_item_to_cart(db: Session, user_id: int, item_data: CartItemCreate):
         CartItem.deleted_at.is_(None)
     ).first()
     
-    new_quantity = item_data.quantity
+    new_quantity = quantity
     if existing_item:
         new_quantity += existing_item.quantity
-        
-    if new_quantity > product.stock:
-        raise insufficient_stock()
         
     if existing_item:
         existing_item.quantity = new_quantity
@@ -53,7 +54,7 @@ def add_item_to_cart(db: Session, user_id: int, item_data: CartItemCreate):
         new_item = CartItem(
             cart_id=cart.id,
             product_id=product.id,
-            quantity=item_data.quantity
+            quantity=quantity
         )
         db.add(new_item)
         db.commit()
@@ -65,19 +66,15 @@ def update_cart_item(db: Session, user_id: int, item_id: int, item_data: CartIte
     item = db.query(CartItem).filter(CartItem.id == item_id, CartItem.cart_id == cart.id, CartItem.deleted_at.is_(None)).first()
     if not item:
         raise CustomException(status.HTTP_404_NOT_FOUND, "Cart item not found", "ITEM_NOT_FOUND")
-        
-    if item_data.quantity <= 0:
-        raise CustomException(status.HTTP_400_BAD_REQUEST, "Quantity must be greater than 0", "INVALID_QUANTITY")
-        
+
+    quantity = normalize_quantity(item_data.quantity)
     product = db.query(Product).filter(Product.id == item.product_id, Product.deleted_at.is_(None)).first()
     if not product:
         raise product_not_found()
     if not product.is_active:
         raise CustomException(status.HTTP_400_BAD_REQUEST, "Product is inactive", "PRODUCT_INACTIVE")
-    if item_data.quantity > product.stock:
-        raise insufficient_stock()
         
-    item.quantity = item_data.quantity
+    item.quantity = quantity
     db.commit()
     db.refresh(item)
     return item
@@ -154,8 +151,6 @@ def validate_cart(db: Session, user_id: int, coupon_code: str = None):
             raise product_not_found()
         if not product.is_active:
             raise CustomException(status.HTTP_400_BAD_REQUEST, "Product is inactive", "PRODUCT_INACTIVE")
-        if item.quantity > product.stock:
-            raise insufficient_stock()
         subtotal += product.price * item.quantity
 
     cart_details = get_cart_details(db, user_id)

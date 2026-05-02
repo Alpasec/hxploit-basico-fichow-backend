@@ -1,5 +1,5 @@
 import re
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import Optional
 from datetime import datetime
 from app.models.user import RoleEnum
@@ -20,6 +20,8 @@ class UserResponse(UserBase):
         from_attributes = True
 
 class UserUpdate(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
     full_name: Optional[str] = Field(default=None, min_length=2, max_length=120)
     email: Optional[str] = Field(default=None, min_length=3, max_length=120)
 

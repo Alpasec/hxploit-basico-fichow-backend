@@ -1,15 +1,15 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import Any, List, Optional
 from datetime import datetime
 from decimal import Decimal
 from app.schemas.product_schema import ProductResponse
 
 class CartItemCreate(BaseModel):
     product_id: int
-    quantity: int = Field(gt=0)
+    quantity: Any
 
 class CartItemUpdate(BaseModel):
-    quantity: int = Field(gt=0)
+    quantity: Any
 
 class CartItemResponse(BaseModel):
     id: int

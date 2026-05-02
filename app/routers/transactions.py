@@ -19,11 +19,9 @@ def get_my_transactions(db: Session = Depends(get_db), current_user: User = Depe
 @router.get("/{transaction_id}", response_model=None)
 def get_transaction(transaction_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     transaction = transaction_service.get_transaction_by_id(db, transaction_id)
-    if current_user.role.value != "ADMIN" and transaction.user_id != current_user.id:
-        raise forbidden()
     return success_response(data=TransactionResponse.model_validate(transaction).model_dump())
 
 @router.get("", response_model=None)
-def get_transactions(db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+def get_transactions(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     transactions = transaction_service.get_transactions(db)
     return success_response(data=[TransactionResponse.model_validate(t).model_dump() for t in transactions])

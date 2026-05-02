@@ -42,10 +42,10 @@ def register_user(db: Session, user_data: UserRegister):
 def login_user(db: Session, user_data: UserLogin):
     user = db.query(User).filter(User.email == user_data.email, User.deleted_at.is_(None)).first()
     if not user:
-        raise invalid_credentials()
+        raise CustomException(status.HTTP_404_NOT_FOUND, "User not found", "USER_NOT_FOUND")
         
     if not verify_password(user_data.password, user.password_hash):
-        raise invalid_credentials()
+        raise CustomException(status.HTTP_401_UNAUTHORIZED, "Invalid password", "INVALID_PASSWORD")
         
     if not user.is_active:
         raise CustomException(status.HTTP_403_FORBIDDEN, "User is inactive", "USER_INACTIVE")
