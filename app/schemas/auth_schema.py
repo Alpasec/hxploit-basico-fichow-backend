@@ -5,7 +5,7 @@ EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 class UserLogin(BaseModel):
     email: str = Field(min_length=3, max_length=120)
-    password: str = Field(min_length=6, max_length=128)
+    password: str = Field(min_length=4, max_length=128)
 
     @field_validator("email")
     @classmethod
@@ -18,7 +18,7 @@ class UserLogin(BaseModel):
 class UserRegister(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     email: str = Field(min_length=3, max_length=120)
-    password: str = Field(min_length=6, max_length=128)
+    password: str = Field(min_length=4, max_length=128)
 
     @field_validator("email")
     @classmethod
